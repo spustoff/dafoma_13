@@ -89,44 +89,68 @@ struct EducationInsightsView: View {
     }
     
     private var progressOverviewView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
-                StatCard(
-                    title: "Total Modules",
-                    value: "\(viewModel.totalModulesCount)",
-                    color: ColorPalette.primaryBackground,
-                    icon: "book.fill"
-                )
-                
-                StatCard(
-                    title: "Completed",
-                    value: "\(viewModel.completedModulesCount)",
-                    color: ColorPalette.success,
-                    icon: "checkmark.circle.fill"
-                )
-                
-                StatCard(
-                    title: "Overall Progress",
-                    value: viewModel.overallProgress.asProgressPercentage(),
-                    color: ColorPalette.accentBackground,
-                    icon: "chart.pie.fill"
-                )
-                
-                ForEach(EducationalModule.EducationCategory.allCases, id: \.self) { category in
-                    let count = viewModel.modules.filter { $0.category == category }.count
-                    if count > 0 {
-                        StatCard(
-                            title: category.rawValue,
-                            value: "\(count)",
-                            color: category.color,
-                            icon: categoryIcon(for: category)
-                        )
+        Group {
+            if DeviceInfo.isPad {
+                // iPad: Grid layout for stats
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible()), count: min(4, allStatCards.count)),
+                    spacing: DeviceInfo.adaptiveSpacing
+                ) {
+                    ForEach(Array(allStatCards.enumerated()), id: \.offset) { _, card in
+                        card
                     }
                 }
+                .padding(DeviceInfo.adaptivePadding)
+            } else {
+                // iPhone: Horizontal scroll
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(Array(allStatCards.enumerated()), id: \.offset) { _, card in
+                            card
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.vertical)
             }
-            .padding(.horizontal)
         }
-        .padding(.vertical)
+    }
+    
+    private var allStatCards: [StatCard] {
+        var cards = [
+            StatCard(
+                title: "Total Modules",
+                value: "\(viewModel.totalModulesCount)",
+                color: ColorPalette.primaryBackground,
+                icon: "book.fill"
+            ),
+            StatCard(
+                title: "Completed",
+                value: "\(viewModel.completedModulesCount)",
+                color: ColorPalette.success,
+                icon: "checkmark.circle.fill"
+            ),
+            StatCard(
+                title: "Overall Progress",
+                value: viewModel.overallProgress.asProgressPercentage(),
+                color: ColorPalette.accentBackground,
+                icon: "chart.pie.fill"
+            )
+        ]
+        
+        for category in EducationalModule.EducationCategory.allCases {
+            let count = viewModel.modules.filter { $0.category == category }.count
+            if count > 0 {
+                cards.append(StatCard(
+                    title: category.rawValue,
+                    value: "\(count)",
+                    color: category.color,
+                    icon: categoryIcon(for: category)
+                ))
+            }
+        }
+        
+        return cards
     }
     
     private var filterSectionView: some View {
@@ -215,14 +239,17 @@ struct EducationInsightsView: View {
     
     private var moduleGridView: some View {
         ScrollView {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 1), spacing: 16) {
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible()), count: DeviceInfo.idealColumnCount),
+                spacing: DeviceInfo.adaptiveSpacing
+            ) {
                 ForEach(viewModel.filteredModules) { module in
                     EducationModuleCard(module: module) {
                         selectedModule = module
                     }
                 }
             }
-            .padding()
+            .padding(DeviceInfo.adaptivePadding)
         }
     }
     

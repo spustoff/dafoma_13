@@ -21,7 +21,7 @@ struct LearningModuleView: View {
                 .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: DeviceInfo.adaptiveSpacing) {
                         // Header
                         headerView
                         
@@ -31,7 +31,7 @@ struct LearningModuleView: View {
                         // Lessons List
                         lessonsListView
                     }
-                    .padding()
+                    .padding(DeviceInfo.adaptivePadding)
                 }
             }
             .navigationTitle("Learning Module")
@@ -124,7 +124,7 @@ struct LearningModuleView: View {
     }
     
     private var progressSectionView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: DeviceInfo.adaptiveSpacing) {
             // Progress Bar
             VStack(spacing: 8) {
                 HStack {
@@ -144,34 +144,64 @@ struct LearningModuleView: View {
                     .progressViewStyle(LinearProgressViewStyle(tint: module.category.color))
                     .background(Color(.systemGray5))
                     .cornerRadius(6)
-                    .frame(height: 12)
+                    .frame(height: DeviceInfo.isPad ? 16 : 12)
             }
             
             // Stats
-            HStack(spacing: 20) {
-                StatCard(
-                    title: "Total Lessons",
-                    value: "\(module.lessons.count)",
-                    color: module.category.color,
-                    icon: "play.circle"
-                )
-                
-                StatCard(
-                    title: "Completed",
-                    value: "\(completedLessonsCount)",
-                    color: ColorPalette.success,
-                    icon: "checkmark.circle.fill"
-                )
-                
-                StatCard(
-                    title: "Time Est.",
-                    value: totalDuration.asFormattedDuration(),
-                    color: ColorPalette.secondaryBackground,
-                    icon: "clock"
-                )
+            if DeviceInfo.isPad {
+                // iPad: Grid layout for stats
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible()), count: 3),
+                    spacing: DeviceInfo.adaptiveSpacing
+                ) {
+                    StatCard(
+                        title: "Total Lessons",
+                        value: "\(module.lessons.count)",
+                        color: module.category.color,
+                        icon: "play.circle"
+                    )
+                    
+                    StatCard(
+                        title: "Completed",
+                        value: "\(completedLessonsCount)",
+                        color: ColorPalette.success,
+                        icon: "checkmark.circle.fill"
+                    )
+                    
+                    StatCard(
+                        title: "Time Est.",
+                        value: totalDuration.asFormattedDuration(),
+                        color: ColorPalette.secondaryBackground,
+                        icon: "clock"
+                    )
+                }
+            } else {
+                // iPhone: Horizontal layout
+                HStack(spacing: 20) {
+                    StatCard(
+                        title: "Total Lessons",
+                        value: "\(module.lessons.count)",
+                        color: module.category.color,
+                        icon: "play.circle"
+                    )
+                    
+                    StatCard(
+                        title: "Completed",
+                        value: "\(completedLessonsCount)",
+                        color: ColorPalette.success,
+                        icon: "checkmark.circle.fill"
+                    )
+                    
+                    StatCard(
+                        title: "Time Est.",
+                        value: totalDuration.asFormattedDuration(),
+                        color: ColorPalette.secondaryBackground,
+                        icon: "clock"
+                    )
+                }
             }
         }
-        .padding()
+        .padding(DeviceInfo.adaptivePadding)
         .cardStyle()
     }
     
@@ -307,11 +337,12 @@ struct LessonRowView: View {
                         .foregroundColor(.gray)
                 }
             }
-            .padding()
+            .padding(DeviceInfo.isPad ? 20 : 16)
+            .frame(minHeight: DeviceInfo.minTouchTargetSize)
             .background(isUnlocked ? ColorPalette.surface : Color(.systemGray6))
-            .cornerRadius(12)
+            .cornerRadius(DeviceInfo.isPad ? 16 : 12)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: DeviceInfo.isPad ? 16 : 12)
                     .stroke(statusColor.opacity(0.3), lineWidth: 1)
             )
         }

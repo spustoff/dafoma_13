@@ -96,32 +96,68 @@ struct ColorCoordinatorView: View {
     }
     
     private var progressOverviewView: some View {
-        HStack(spacing: 20) {
-            // Total Tasks
-            StatCard(
-                title: "Total Tasks",
-                value: "\(viewModel.totalTasksCount)",
-                color: ColorPalette.secondaryBackground,
-                icon: "checklist"
-            )
-            
-            // Completed
-            StatCard(
-                title: "Completed",
-                value: "\(viewModel.completedTasksCount)",
-                color: ColorPalette.success,
-                icon: "checkmark.circle.fill"
-            )
-            
-            // Progress
-            StatCard(
-                title: "Progress",
-                value: viewModel.completionProgress.asProgressPercentage(),
-                color: ColorPalette.accentBackground,
-                icon: "chart.pie.fill"
-            )
+        Group {
+            if DeviceInfo.isPad {
+                // iPad: Grid layout for stats with more space
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible()), count: 3),
+                    spacing: DeviceInfo.adaptiveSpacing
+                ) {
+                    // Total Tasks
+                    StatCard(
+                        title: "Total Tasks",
+                        value: "\(viewModel.totalTasksCount)",
+                        color: ColorPalette.secondaryBackground,
+                        icon: "checklist"
+                    )
+                    
+                    // Completed
+                    StatCard(
+                        title: "Completed",
+                        value: "\(viewModel.completedTasksCount)",
+                        color: ColorPalette.success,
+                        icon: "checkmark.circle.fill"
+                    )
+                    
+                    // Progress
+                    StatCard(
+                        title: "Progress",
+                        value: viewModel.completionProgress.asProgressPercentage(),
+                        color: ColorPalette.accentBackground,
+                        icon: "chart.pie.fill"
+                    )
+                }
+                .padding(DeviceInfo.adaptivePadding)
+            } else {
+                // iPhone: Horizontal layout
+                HStack(spacing: 20) {
+                    // Total Tasks
+                    StatCard(
+                        title: "Total Tasks",
+                        value: "\(viewModel.totalTasksCount)",
+                        color: ColorPalette.secondaryBackground,
+                        icon: "checklist"
+                    )
+                    
+                    // Completed
+                    StatCard(
+                        title: "Completed",
+                        value: "\(viewModel.completedTasksCount)",
+                        color: ColorPalette.success,
+                        icon: "checkmark.circle.fill"
+                    )
+                    
+                    // Progress
+                    StatCard(
+                        title: "Progress",
+                        value: viewModel.completionProgress.asProgressPercentage(),
+                        color: ColorPalette.accentBackground,
+                        icon: "chart.pie.fill"
+                    )
+                }
+                .padding()
+            }
         }
-        .padding()
     }
     
     private var filterSectionView: some View {
@@ -208,7 +244,12 @@ struct ColorCoordinatorView: View {
                         Section(header: CategoryHeaderView(category: category)) {
                             ForEach(viewModel.tasksByCategory[category] ?? []) { task in
                                 TaskRowView(task: task, viewModel: viewModel)
-                                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                    .listRowInsets(EdgeInsets(
+                                        top: DeviceInfo.isPad ? 12 : 8,
+                                        leading: DeviceInfo.adaptivePadding,
+                                        bottom: DeviceInfo.isPad ? 12 : 8,
+                                        trailing: DeviceInfo.adaptivePadding
+                                    ))
                                     .listRowBackground(Color.clear)
                             }
                         }
@@ -383,10 +424,11 @@ struct TaskRowView: View {
                 Spacer()
                 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(DeviceInfo.isPad ? .body : .caption)
                     .foregroundColor(.gray)
             }
-            .padding()
+            .padding(DeviceInfo.isPad ? 20 : 16)
+            .frame(minHeight: DeviceInfo.minTouchTargetSize)
             .cardStyle()
         }
         .buttonStyle(PlainButtonStyle())

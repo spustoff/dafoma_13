@@ -12,6 +12,7 @@ struct MainTabView: View {
             NavigationView {
                 ColorCoordinatorView(viewModel: taskViewModel)
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: MainTab.coordinator.icon)
                 Text(MainTab.coordinator.title)
@@ -22,6 +23,7 @@ struct MainTabView: View {
             NavigationView {
                 EntertainmentHubView(viewModel: entertainmentViewModel)
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: MainTab.entertainment.icon)
                 Text(MainTab.entertainment.title)
@@ -32,6 +34,7 @@ struct MainTabView: View {
             NavigationView {
                 EducationInsightsView(viewModel: educationViewModel)
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: MainTab.education.icon)
                 Text(MainTab.education.title)

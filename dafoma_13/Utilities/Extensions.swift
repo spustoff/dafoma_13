@@ -16,22 +16,24 @@ extension View {
     func primaryButtonStyle() -> some View {
         self
             .foregroundColor(.white)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
+            .padding(.horizontal, DeviceInfo.isPad ? 32 : 24)
+            .padding(.vertical, DeviceInfo.isPad ? 16 : 12)
+            .frame(minHeight: DeviceInfo.minTouchTargetSize)
             .background(ColorPalette.primaryBackground)
-            .cornerRadius(8)
+            .cornerRadius(DeviceInfo.isPad ? 12 : 8)
             .shadow(color: ColorPalette.primaryBackground.opacity(0.3), radius: 4, x: 0, y: 2)
     }
     
     func secondaryButtonStyle() -> some View {
         self
             .foregroundColor(ColorPalette.primaryBackground)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
+            .padding(.horizontal, DeviceInfo.isPad ? 32 : 24)
+            .padding(.vertical, DeviceInfo.isPad ? 16 : 12)
+            .frame(minHeight: DeviceInfo.minTouchTargetSize)
             .background(ColorPalette.secondaryBackground)
-            .cornerRadius(8)
+            .cornerRadius(DeviceInfo.isPad ? 12 : 8)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: DeviceInfo.isPad ? 12 : 8)
                     .stroke(ColorPalette.primaryBackground, lineWidth: 1)
             )
     }
@@ -39,10 +41,11 @@ extension View {
     func accentButtonStyle() -> some View {
         self
             .foregroundColor(.black)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
+            .padding(.horizontal, DeviceInfo.isPad ? 32 : 24)
+            .padding(.vertical, DeviceInfo.isPad ? 16 : 12)
+            .frame(minHeight: DeviceInfo.minTouchTargetSize)
             .background(ColorPalette.accentBackground)
-            .cornerRadius(8)
+            .cornerRadius(DeviceInfo.isPad ? 12 : 8)
             .shadow(color: ColorPalette.accentBackground.opacity(0.3), radius: 4, x: 0, y: 2)
     }
     
@@ -204,5 +207,30 @@ struct DeviceInfo {
     
     static var isSmallScreen: Bool {
         screenSize.height < 700
+    }
+    
+    // iPad-specific layout helpers
+    static var isLargeScreen: Bool {
+        screenSize.width > 768 // iPad and larger
+    }
+    
+    static var idealColumnCount: Int {
+        if isPad {
+            return screenSize.width > 1000 ? 3 : 2 // 3 columns for larger iPads, 2 for smaller
+        } else {
+            return 1 // Single column for phones
+        }
+    }
+    
+    static var adaptiveSpacing: CGFloat {
+        isPad ? 24 : 16
+    }
+    
+    static var adaptivePadding: CGFloat {
+        isPad ? 32 : 20
+    }
+    
+    static var minTouchTargetSize: CGFloat {
+        44 // Apple's recommended minimum touch target size
     }
 } 

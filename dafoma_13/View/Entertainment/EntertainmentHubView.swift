@@ -101,44 +101,68 @@ struct EntertainmentHubView: View {
     }
     
     private var quickStatsView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
-                StatCard(
-                    title: "Total Items",
-                    value: "\(viewModel.mediaItems.count)",
-                    color: ColorPalette.primaryBackground,
-                    icon: "rectangle.stack"
-                )
-                
-                StatCard(
-                    title: "Favorites",
-                    value: "\(viewModel.favoriteItems.count)",
-                    color: ColorPalette.destructive,
-                    icon: "heart.fill"
-                )
-                
-                StatCard(
-                    title: "Playlists",
-                    value: "\(viewModel.playlists.count)",
-                    color: ColorPalette.success,
-                    icon: "music.note.list"
-                )
-                
-                ForEach(MediaItem.MediaType.allCases, id: \.self) { type in
-                    let count = viewModel.mediaItems.filter { $0.type == type }.count
-                    if count > 0 {
-                        StatCard(
-                            title: type.rawValue,
-                            value: "\(count)",
-                            color: ColorPalette.secondaryBackground,
-                            icon: type.icon
-                        )
+        Group {
+            if DeviceInfo.isPad {
+                // iPad: Grid layout for stats
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible()), count: min(4, allQuickStatCards.count)),
+                    spacing: DeviceInfo.adaptiveSpacing
+                ) {
+                    ForEach(Array(allQuickStatCards.enumerated()), id: \.offset) { _, card in
+                        card
                     }
                 }
+                .padding(DeviceInfo.adaptivePadding)
+            } else {
+                // iPhone: Horizontal scroll
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(Array(allQuickStatCards.enumerated()), id: \.offset) { _, card in
+                            card
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.vertical)
             }
-            .padding(.horizontal)
         }
-        .padding(.vertical)
+    }
+    
+    private var allQuickStatCards: [StatCard] {
+        var cards = [
+            StatCard(
+                title: "Total Items",
+                value: "\(viewModel.mediaItems.count)",
+                color: ColorPalette.primaryBackground,
+                icon: "rectangle.stack"
+            ),
+            StatCard(
+                title: "Favorites",
+                value: "\(viewModel.favoriteItems.count)",
+                color: ColorPalette.destructive,
+                icon: "heart.fill"
+            ),
+            StatCard(
+                title: "Playlists",
+                value: "\(viewModel.playlists.count)",
+                color: ColorPalette.success,
+                icon: "music.note.list"
+            )
+        ]
+        
+        for type in MediaItem.MediaType.allCases {
+            let count = viewModel.mediaItems.filter { $0.type == type }.count
+            if count > 0 {
+                cards.append(StatCard(
+                    title: type.rawValue,
+                    value: "\(count)",
+                    color: ColorPalette.secondaryBackground,
+                    icon: type.icon
+                ))
+            }
+        }
+        
+        return cards
     }
     
     private var filterSectionView: some View {
@@ -223,12 +247,15 @@ struct EntertainmentHubView: View {
                 emptyMediaStateView
             } else {
                 ScrollView {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible()), count: DeviceInfo.isPad ? 3 : 2),
+                        spacing: DeviceInfo.adaptiveSpacing
+                    ) {
                         ForEach(viewModel.filteredMediaItems) { item in
                             MediaItemCard(item: item, viewModel: viewModel)
                         }
                     }
-                    .padding()
+                    .padding(DeviceInfo.adaptivePadding)
                 }
             }
         }
@@ -259,12 +286,15 @@ struct EntertainmentHubView: View {
                 emptyFavoritesStateView
             } else {
                 ScrollView {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible()), count: DeviceInfo.isPad ? 3 : 2),
+                        spacing: DeviceInfo.adaptiveSpacing
+                    ) {
                         ForEach(viewModel.favoriteItems) { item in
                             MediaItemCard(item: item, viewModel: viewModel)
                         }
                     }
-                    .padding()
+                    .padding(DeviceInfo.adaptivePadding)
                 }
             }
         }

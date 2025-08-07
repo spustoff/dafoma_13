@@ -63,17 +63,32 @@ struct LessonView: View {
     
     private var lessonContentView: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                // Header
-                lessonHeaderView
-                
-                // Content
-                lessonContentSectionView
-                
-                // Action Buttons
-                lessonActionButtonsView
+            HStack(spacing: 0) {
+                if DeviceInfo.isPad {
+                    // iPad: Side-by-side layout
+                    VStack(spacing: DeviceInfo.adaptiveSpacing) {
+                        lessonHeaderView
+                        lessonActionButtonsView
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.trailing, DeviceInfo.adaptiveSpacing)
+                    
+                    VStack(spacing: DeviceInfo.adaptiveSpacing) {
+                        lessonContentSectionView
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                } else {
+                    // iPhone: Vertical layout
+                    VStack(spacing: 24) {
+                        lessonHeaderView
+                        lessonContentSectionView
+                        lessonActionButtonsView
+                    }
+                    .frame(maxWidth: .infinity)
+                }
             }
-            .padding()
+            .padding(DeviceInfo.adaptivePadding)
         }
     }
     
@@ -224,68 +239,139 @@ struct LessonView: View {
     
     private var quizQuestionView: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                if let quiz = lesson.quiz,
-                   currentQuizQuestion < quiz.questions.count {
-                    let question = quiz.questions[currentQuizQuestion]
-                    
-                    // Question
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Question \(currentQuizQuestion + 1)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+            if DeviceInfo.isPad {
+                // iPad: Wider layout with better spacing
+                VStack(spacing: DeviceInfo.adaptiveSpacing) {
+                    if let quiz = lesson.quiz,
+                       currentQuizQuestion < quiz.questions.count {
+                        let question = quiz.questions[currentQuizQuestion]
                         
-                        Text(question.text)
-                            .font(.title3)
-                            .fontWeight(.medium)
-                            .foregroundColor(ColorPalette.onSurface)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .cardStyle()
-                    
-                    // Answer Options
-                    VStack(spacing: 12) {
-                        ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
-                            QuizAnswerOption(
-                                text: option,
-                                index: index,
-                                isSelected: selectedAnswers[safe: currentQuizQuestion] == index,
-                                color: module.category.color
-                            ) {
-                                selectAnswer(index)
+                        HStack(spacing: DeviceInfo.adaptiveSpacing) {
+                            // Question Section
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Question \(currentQuizQuestion + 1)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                
+                                Text(question.text)
+                                    .font(.title2)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(ColorPalette.onSurface)
                             }
-                        }
-                    }
-                    
-                    // Navigation
-                    HStack {
-                        if currentQuizQuestion > 0 {
-                            Button("Previous") {
-                                previousQuestion()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(DeviceInfo.adaptivePadding)
+                            .cardStyle()
+                            
+                            // Answer Options Section
+                            VStack(spacing: 16) {
+                                ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
+                                    QuizAnswerOption(
+                                        text: option,
+                                        index: index,
+                                        isSelected: selectedAnswers[safe: currentQuizQuestion] == index,
+                                        color: module.category.color
+                                    ) {
+                                        selectAnswer(index)
+                                    }
+                                }
                             }
-                            .secondaryButtonStyle()
+                            .frame(maxWidth: .infinity)
                         }
                         
-                        Spacer()
+                        // Navigation
+                        HStack(spacing: DeviceInfo.adaptiveSpacing) {
+                            if currentQuizQuestion > 0 {
+                                Button("Previous") {
+                                    previousQuestion()
+                                }
+                                .secondaryButtonStyle()
+                            }
+                            
+                            Spacer()
+                            
+                            if currentQuizQuestion < quiz.questions.count - 1 {
+                                Button("Next") {
+                                    nextQuestion()
+                                }
+                                .primaryButtonStyle()
+                                .disabled(selectedAnswers[safe: currentQuizQuestion] == nil)
+                            } else {
+                                Button("Finish Quiz") {
+                                    finishQuiz()
+                                }
+                                .accentButtonStyle()
+                                .disabled(selectedAnswers[safe: currentQuizQuestion] == nil)
+                            }
+                        }
+                        .padding(.horizontal, DeviceInfo.adaptivePadding)
+                    }
+                }
+                .padding(DeviceInfo.adaptivePadding)
+            } else {
+                // iPhone: Original vertical layout
+                VStack(spacing: 24) {
+                    if let quiz = lesson.quiz,
+                       currentQuizQuestion < quiz.questions.count {
+                        let question = quiz.questions[currentQuizQuestion]
                         
-                        if currentQuizQuestion < quiz.questions.count - 1 {
-                            Button("Next") {
-                                nextQuestion()
+                        // Question
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Question \(currentQuizQuestion + 1)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text(question.text)
+                                .font(.title3)
+                                .fontWeight(.medium)
+                                .foregroundColor(ColorPalette.onSurface)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .cardStyle()
+                        
+                        // Answer Options
+                        VStack(spacing: 12) {
+                            ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
+                                QuizAnswerOption(
+                                    text: option,
+                                    index: index,
+                                    isSelected: selectedAnswers[safe: currentQuizQuestion] == index,
+                                    color: module.category.color
+                                ) {
+                                    selectAnswer(index)
+                                }
                             }
-                            .primaryButtonStyle()
-                            .disabled(selectedAnswers[safe: currentQuizQuestion] == nil)
-                        } else {
-                            Button("Finish Quiz") {
-                                finishQuiz()
+                        }
+                        
+                        // Navigation
+                        HStack {
+                            if currentQuizQuestion > 0 {
+                                Button("Previous") {
+                                    previousQuestion()
+                                }
+                                .secondaryButtonStyle()
                             }
-                            .accentButtonStyle()
-                            .disabled(selectedAnswers[safe: currentQuizQuestion] == nil)
+                            
+                            Spacer()
+                            
+                            if currentQuizQuestion < quiz.questions.count - 1 {
+                                Button("Next") {
+                                    nextQuestion()
+                                }
+                                .primaryButtonStyle()
+                                .disabled(selectedAnswers[safe: currentQuizQuestion] == nil)
+                            } else {
+                                Button("Finish Quiz") {
+                                    finishQuiz()
+                                }
+                                .accentButtonStyle()
+                                .disabled(selectedAnswers[safe: currentQuizQuestion] == nil)
+                            }
                         }
                     }
                 }
+                .padding()
             }
-            .padding()
         }
     }
     
@@ -488,11 +574,12 @@ struct QuizAnswerOption: View {
                 
                 Spacer()
             }
-            .padding()
+            .padding(DeviceInfo.isPad ? 20 : 16)
+            .frame(minHeight: DeviceInfo.minTouchTargetSize)
             .background(isSelected ? color.opacity(0.1) : ColorPalette.surface)
-            .cornerRadius(12)
+            .cornerRadius(DeviceInfo.isPad ? 16 : 12)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: DeviceInfo.isPad ? 16 : 12)
                     .stroke(isSelected ? color : Color(.systemGray4), lineWidth: 2)
             )
         }
