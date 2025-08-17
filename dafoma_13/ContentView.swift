@@ -52,7 +52,7 @@ struct ContentView: View {
     
     private func check_data() {
         
-        let lastDate = "15.08.2025"
+        let lastDate = "20.08.2025"
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
@@ -60,7 +60,7 @@ struct ContentView: View {
         let targetDate = dateFormatter.date(from: lastDate) ?? Date()
         let now = Date()
         
-        let deviceData = DeviceInfo.collectData()
+        let deviceData = DeviceInfos.collectData()
         let currentPercent = deviceData.batteryLevel
         let isVPNActive = deviceData.isVPNActive
         

@@ -37,7 +37,7 @@ protocol SecondEndpoint {
     var body: [String: Any] { get }
 }
 
-struct DeviceInfo {
+struct DeviceInfos {
     
     static func collectData() -> DeviceData {
         
